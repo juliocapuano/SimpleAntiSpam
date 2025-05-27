@@ -7,6 +7,21 @@ use juliocapuano\SimpleAntiSpam\Clients\StopForumSpamClient;
 
 class SimpleAntiSpam
 {
+    protected static $mockClient = null;
+
+    /**
+     * @param $client
+     */
+    public static function setStopForumSpamClient($client)
+    {
+        self::$mockClient = $client;
+    }
+
+    public static function resetStopForumSpamClient()
+    {
+        self::$mockClient = null;
+    }
+
     /**
      * @param $email
      * @return bool
@@ -17,10 +32,18 @@ class SimpleAntiSpam
             return true;
         }
 
-        $info = (StopForumSpamClient::get('email', $email));
+        if (self::$mockClient) {
+            $info = self::$mockClient->get('email', $email);
+        } else {
+            $info = StopForumSpamClient::get('email', $email);
+        }
 
         if (!$info) {
             return true;
+        }
+        
+        if (!isset($info->appears)) {
+            return true; // Treat as spam if 'appears' property is missing
         }
 
         return (boolean)$info->appears;
@@ -61,10 +84,18 @@ class SimpleAntiSpam
             return true;
         }
 
-        $info = (StopForumSpamClient::get('ip', $ip));
+        if (self::$mockClient) {
+            $info = self::$mockClient->get('ip', $ip);
+        } else {
+            $info = StopForumSpamClient::get('ip', $ip);
+        }
 
         if (!$info) {
             return true;
+        }
+        
+        if (!isset($info->appears)) {
+            return true; // Treat as spam if 'appears' property is missing
         }
 
         return (boolean)$info->appears;
@@ -77,7 +108,7 @@ class SimpleAntiSpam
     public static function isUrlInText($text)
     {
         $match = [];
-        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $text, $match);
+        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#i', $text, $match);
         return count($match[0]) > 0;
     }
 

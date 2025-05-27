@@ -40,7 +40,7 @@ try{
     if(SimpleAntiSpam::isSpamEmail($email))
         throw new \Exception('email is invalid or in black list')
 
-    if(SimpleAntiSpam::isSpamIp([$ip]))
+    if(SimpleAntiSpam::isSpamIp($ip))
         throw new \Exception('ip is invalid or in black list')
     
     if(SimpleAntiSpam::isUrlInText($content))
